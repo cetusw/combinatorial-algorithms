@@ -7,10 +7,7 @@
 #include <limits>
 #include <chrono>
 
-constexpr int SECONDS_PER_MINUTE = 60;
-constexpr int SECONDS_PER_HOUR = SECONDS_PER_MINUTE * 60;
-constexpr int SECONDS_PER_DAY = SECONDS_PER_HOUR * 24;
-constexpr int SECONDS_PER_YEAR = SECONDS_PER_DAY * 365;
+constexpr int SECONDS_PER_YEAR = 60 * 60 * 24 * 365;
 
 constexpr long double EARTH_AGE_YEARS = 4540000000;
 constexpr long double UNIVERSE_AGE_YEARS = 13800000000;
