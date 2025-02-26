@@ -138,7 +138,6 @@ int main() {
     std::cout << std::chrono::duration<long double>(functionDuration) << std::endl;
     std::cout << std::endl;
 
-    calculateDuration(functionDuration, numberOfFactories, 15);
     calculateDuration(functionDuration, numberOfFactories, 20);
     calculateDuration(functionDuration, numberOfFactories, 50);
     calculateDuration(functionDuration, numberOfFactories, 100);
