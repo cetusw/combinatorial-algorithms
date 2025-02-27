@@ -1,3 +1,4 @@
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -80,11 +81,11 @@ void PrintTeam(const std::vector<size_t>& team)
 	else
 	{
 		std::cout << "Наименьшая подгруппа:" << std::endl;
-		for (size_t idx : team)
+		for (const size_t index : team)
 		{
-			std::cout << (idx + 1) << " ";
+			std::cout << team[index] << " ";
 		}
-		std::cout << "\n";
+		std::cout << std::endl;
 	}
 }
 
@@ -130,9 +131,13 @@ int main(const int argc, char* argv[])
 	std::vector<std::string> employeeSkills;
 
 	ReadSkills(argv[1], requiredSkills, employeeSkills);
+	const auto start = std::chrono::high_resolution_clock::now();
 	const std::vector<size_t> bestTeam
 		= FindBestTeam(employeeSkills.size(), employeeSkills, requiredSkills);
+	const auto end = std::chrono::high_resolution_clock::now();
+	const auto functionDuration = end - start;
 	PrintTeam(bestTeam);
+	std::cout << std::chrono::duration<long double>(functionDuration) << std::endl;
 
 	return 0;
 }
