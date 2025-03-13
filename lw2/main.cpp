@@ -7,7 +7,6 @@ int main(const int argc, const char * argv[])
 	Graph g;
 	std::ifstream input(argv[1]);
 	g.ReadGraphFromFile(input);
-	g.AddEdge(1, 3, 4);
 
 	ListOfEdges edges = g.AdjacencyMatrixToEdges(g.GetAdjacencyMatrix());
 
@@ -19,7 +18,8 @@ int main(const int argc, const char * argv[])
 	std::cout << "Матрица смежности:\n";
 	Graph::PrintAdjacencyMatrix(adj);
 
-	g.DFS(0);
+	g.DFS(8);
+	g.PrintDiscoveryFinishTimes();
 
 	return 0;
 }

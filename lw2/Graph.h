@@ -18,11 +18,12 @@ public:
 	void ReadGraphFromFile(std::ifstream& file);
 	AdjacencyMatrix GetAdjacencyMatrix();
 
-	void processDFS(int vertex, std::vector<bool>& visited);
+	void ProcessDFS(int vertex, std::vector<bool>& visited);
 	void DFS(int startVertex);
+	void PrintDiscoveryFinishTimes() const;
 
 	AdjacencyMatrix EdgesToAdjacencyMatrix(const ListOfEdges& listOfEdges);
-	static ListOfEdges AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix);
+	ListOfEdges AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix);
 
 	static void PrintAdjacencyMatrix(const AdjacencyMatrix& adj);
 	static void PrintListOfEdges(const ListOfEdges& edges);
@@ -32,6 +33,8 @@ private:
 	static constexpr int NO_EDGE = std::numeric_limits<int>::max();
 	AdjacencyMatrix adjacencyMatrix;
 	std::vector<bool> visited;
+	std::vector<std::pair<int, int>> discoveryFinishTimes;
+	int timeCounter = 0;
 };
 
 #endif // GRAPH_H

@@ -29,32 +29,66 @@ void Graph::ReadGraphFromFile(std::ifstream& file)
 	int u, v, w;
 	while (std::getline(file, line) && edgeCount >= 0)
 	{
+		if (line.empty())
+		{
+			continue;
+		}
 		std::stringstream ss(line);
-		ss >> u >> v >> w;
-		AddEdge(u, v, w);
-		edgeCount--;
+		if (ss >> u >> v >> w)
+		{
+			AddEdge(u, v, w);
+			edgeCount--;
+		}
 	}
 }
 
-void Graph::processDFS(const int vertex, std::vector<bool>& visited)
+void Graph::ProcessDFS(const int vertex, std::vector<bool>& visited)
 {
 	visited[vertex] = true;
 	std::cout << vertex << " ";
+	discoveryFinishTimes[vertex].first = ++timeCounter;
 
 	for (int i = 0; i < adjacencyMatrix[vertex].size(); ++i)
 	{
 		if (adjacencyMatrix[vertex][i] != NO_EDGE && !visited[i])
 		{
-			processDFS(i, visited);
+			ProcessDFS(i, visited);
 		}
 	}
+
+	discoveryFinishTimes[vertex].second = ++timeCounter;
 }
 
 void Graph::DFS(const int startVertex)
 {
 	std::vector visited(numVertices, false);
-	processDFS(startVertex, visited);
+	discoveryFinishTimes.resize(numVertices, { 0, 0 });
+	timeCounter = 0;
+
+	if (startVertex >= 0 && startVertex < numVertices && !visited[startVertex])
+	{
+		ProcessDFS(startVertex, visited);
+	}
+
+	for (int i = 0; i < numVertices; ++i)
+	{
+		if (!visited[i])
+		{
+			ProcessDFS(i, visited);
+		}
+	}
+
 	std::cout << std::endl;
+}
+
+void Graph::PrintDiscoveryFinishTimes() const
+{
+	std::cout << "Время первого и повторного захода в вершину:" << std::endl;
+	for (size_t i = 0; i < discoveryFinishTimes.size(); ++i)
+	{
+		std::cout << "Вершина " << i << ": [" << discoveryFinishTimes[i].first << ", "
+				  << discoveryFinishTimes[i].second << "]" << std::endl;
+	}
 }
 
 AdjacencyMatrix Graph::EdgesToAdjacencyMatrix(const ListOfEdges& listOfEdges)
@@ -81,7 +115,7 @@ ListOfEdges Graph::AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix
 	const int vertexesCount = static_cast<int>(adjacencyMatrix.size());
 	for (int i = 0; i < vertexesCount; i++)
 	{
-		for (int j = i + 1; j < vertexesCount; j++)
+		for (int j = 0; j < vertexesCount; j++)
 		{
 			if (adjacencyMatrix[i][j] != NO_EDGE)
 			{
