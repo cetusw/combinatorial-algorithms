@@ -21,6 +21,7 @@ public:
 	void ProcessDFS(int vertex, std::vector<bool>& visited);
 	void DFS(int startVertex);
 	void PrintDiscoveryFinishTimes() const;
+	HamiltonianCycleResult FindMinHamiltonianCycle() const;
 
 	AdjacencyMatrix EdgesToAdjacencyMatrix(const ListOfEdges& listOfEdges);
 	ListOfEdges AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix);
@@ -28,9 +29,10 @@ public:
 	static void PrintAdjacencyMatrix(const AdjacencyMatrix& adj);
 	static void PrintListOfEdges(const ListOfEdges& edges);
 
+	static constexpr int NO_EDGE = std::numeric_limits<int>::max();
+
 private:
 	int numVertices = 0;
-	static constexpr int NO_EDGE = std::numeric_limits<int>::max();
 	AdjacencyMatrix adjacencyMatrix;
 	std::vector<bool> visited;
 	std::vector<std::pair<int, int>> discoveryFinishTimes;

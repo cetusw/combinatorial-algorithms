@@ -20,6 +20,7 @@ int main(const int argc, const char * argv[])
 
 	g.DFS(8);
 	g.PrintDiscoveryFinishTimes();
+	std::cout << g.FindMinHamiltonianCycle().totalWeight << std::endl;
 
 	return 0;
 }

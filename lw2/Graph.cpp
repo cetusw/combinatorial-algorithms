@@ -1,5 +1,7 @@
 #include "Graph.h"
 
+#include <algorithm>
+
 Graph::Graph() = default;
 
 void Graph::AddEdge(const int u, const int v, const int w)
@@ -79,6 +81,58 @@ void Graph::DFS(const int startVertex)
 	}
 
 	std::cout << std::endl;
+}
+
+HamiltonianCycleResult Graph::FindMinHamiltonianCycle() const
+{
+	HamiltonianCycleResult result;
+	result.found = false;
+	result.totalWeight = std::numeric_limits<int>::max();
+
+	if (numVertices <= 1)
+	{
+		throw std::invalid_argument("Граф содержит менее 2 вершин");
+	}
+
+	std::vector<int> vertices;
+	for (int i = 1; i < numVertices; ++i)
+	{
+		vertices.push_back(i);
+	}
+
+	do
+	{
+		std::vector<int> currentPath;
+		currentPath.push_back(0);
+		currentPath.insert(currentPath.end(), vertices.begin(), vertices.end());
+		currentPath.push_back(0);
+
+		bool valid = true;
+		int currentWeight = 0;
+
+		for (size_t i = 0; i < currentPath.size() - 1; ++i)
+		{
+			const int u = currentPath[i];
+			const int v = currentPath[i + 1];
+
+			if (adjacencyMatrix[u][v] == NO_EDGE)
+			{
+				valid = false;
+				break;
+			}
+			currentWeight += adjacencyMatrix[u][v];
+		}
+
+		if (valid && currentWeight < result.totalWeight)
+		{
+			result.path = currentPath;
+			result.totalWeight = currentWeight;
+			result.found = true;
+		}
+
+	} while (std::ranges::next_permutation(vertices).found);
+
+	return result;
 }
 
 void Graph::PrintDiscoveryFinishTimes() const
