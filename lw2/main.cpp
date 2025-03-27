@@ -10,17 +10,19 @@ int main(const int argc, const char * argv[])
 
 	ListOfEdges edges = g.AdjacencyMatrixToEdges(g.GetAdjacencyMatrix());
 
-	std::cout << "Список рёбер:\n";
-	Graph::PrintListOfEdges(edges);
+	Matrix matrix(g.GetAdjacencyMatrix());
+	Edges path;
+	double bot = 0;
+	g.FindMinCycle(matrix, path, bot);
 
-	AdjacencyMatrix adj = g.EdgesToAdjacencyMatrix(edges);
-
-	std::cout << "Матрица смежности:\n";
-	Graph::PrintAdjacencyMatrix(adj);
-
-	g.DFS(8);
-	g.PrintDiscoveryFinishTimes();
-	std::cout << g.FindMinHamiltonianCycle().totalWeight << std::endl;
-
+	if (g.IsCycleFound()) {
+		std::cout << "Minimal cycle weight: " << g.GetCycleWeight() << std::endl;
+		std::cout << "Path:" << std::endl;
+		for (const auto& edge : g.GetCyclePath()) {
+			std::cout << edge.first << " -> " << edge.second << std::endl;
+		}
+	} else {
+		std::cout << "Hamiltonian cycle not found!" << std::endl;
+	}
 	return 0;
 }

@@ -1,6 +1,8 @@
 #include "Graph.h"
+#include "Matrix.h"
 
 #include <algorithm>
+#include <numeric>
 
 Graph::Graph() = default;
 
@@ -9,38 +11,34 @@ void Graph::AddEdge(const int u, const int v, const int w)
 	const int maxVertex = std::max(u, v);
 	const int requiredSize = maxVertex + 1;
 
-	if (requiredSize > numVertices)
+	if (requiredSize > m_numVertices)
 	{
-		adjacencyMatrix.resize(requiredSize);
-		for (auto& row : adjacencyMatrix)
+		m_adjacencyMatrix.resize(requiredSize);
+		for (auto& row : m_adjacencyMatrix)
 		{
 			row.resize(requiredSize, NO_EDGE);
 		}
-		numVertices = requiredSize;
+		m_numVertices = requiredSize;
 	}
 
-	adjacencyMatrix[u][v] = w;
+	m_adjacencyMatrix[u][v] = w;
 }
 
 void Graph::ReadGraphFromFile(std::ifstream& file)
 {
-	adjacencyMatrix.clear();
-	int edgeCount;
-	file >> edgeCount;
-	std::string line;
+	m_adjacencyMatrix.clear();
+
+	int numVertices, edgeCount;
+	file >> numVertices >> edgeCount;
+
+	m_adjacencyMatrix.resize(numVertices, std::vector(numVertices, INF));
+
 	int u, v, w;
-	while (std::getline(file, line) && edgeCount >= 0)
+	for (int i = 0; i < edgeCount; ++i)
 	{
-		if (line.empty())
-		{
-			continue;
-		}
-		std::stringstream ss(line);
-		if (ss >> u >> v >> w)
-		{
-			AddEdge(u, v, w);
-			edgeCount--;
-		}
+		file >> u >> v >> w;
+		m_adjacencyMatrix[u][v] = w;
+		m_adjacencyMatrix[v][u] = w;
 	}
 }
 
@@ -48,31 +46,31 @@ void Graph::ProcessDFS(const int vertex, std::vector<bool>& visited)
 {
 	visited[vertex] = true;
 	std::cout << vertex << " ";
-	discoveryFinishTimes[vertex].first = ++timeCounter;
+	m_discoveryFinishTimes[vertex].first = ++m_timeCounter;
 
-	for (int i = 0; i < adjacencyMatrix[vertex].size(); ++i)
+	for (int i = 0; i < m_adjacencyMatrix[vertex].size(); ++i)
 	{
-		if (adjacencyMatrix[vertex][i] != NO_EDGE && !visited[i])
+		if (m_adjacencyMatrix[vertex][i] != NO_EDGE && !visited[i])
 		{
 			ProcessDFS(i, visited);
 		}
 	}
 
-	discoveryFinishTimes[vertex].second = ++timeCounter;
+	m_discoveryFinishTimes[vertex].second = ++m_timeCounter;
 }
 
 void Graph::DFS(const int startVertex)
 {
-	std::vector visited(numVertices, false);
-	discoveryFinishTimes.resize(numVertices, { 0, 0 });
-	timeCounter = 0;
+	std::vector visited(m_numVertices, false);
+	m_discoveryFinishTimes.resize(m_numVertices, { 0, 0 });
+	m_timeCounter = 0;
 
-	if (startVertex >= 0 && startVertex < numVertices && !visited[startVertex])
+	if (startVertex >= 0 && startVertex < m_numVertices && !visited[startVertex])
 	{
 		ProcessDFS(startVertex, visited);
 	}
 
-	for (int i = 0; i < numVertices; ++i)
+	for (int i = 0; i < m_numVertices; ++i)
 	{
 		if (!visited[i])
 		{
@@ -83,65 +81,13 @@ void Graph::DFS(const int startVertex)
 	std::cout << std::endl;
 }
 
-HamiltonianCycleResult Graph::FindMinHamiltonianCycle() const
-{
-	HamiltonianCycleResult result;
-	result.found = false;
-	result.totalWeight = std::numeric_limits<int>::max();
-
-	if (numVertices <= 1)
-	{
-		throw std::invalid_argument("Граф содержит менее 2 вершин");
-	}
-
-	std::vector<int> vertices;
-	for (int i = 1; i < numVertices; ++i)
-	{
-		vertices.push_back(i);
-	}
-
-	do
-	{
-		std::vector<int> currentPath;
-		currentPath.push_back(0);
-		currentPath.insert(currentPath.end(), vertices.begin(), vertices.end());
-		currentPath.push_back(0);
-
-		bool valid = true;
-		int currentWeight = 0;
-
-		for (size_t i = 0; i < currentPath.size() - 1; ++i)
-		{
-			const int u = currentPath[i];
-			const int v = currentPath[i + 1];
-
-			if (adjacencyMatrix[u][v] == NO_EDGE)
-			{
-				valid = false;
-				break;
-			}
-			currentWeight += adjacencyMatrix[u][v];
-		}
-
-		if (valid && currentWeight < result.totalWeight)
-		{
-			result.path = currentPath;
-			result.totalWeight = currentWeight;
-			result.found = true;
-		}
-
-	} while (std::ranges::next_permutation(vertices).found);
-
-	return result;
-}
-
 void Graph::PrintDiscoveryFinishTimes() const
 {
 	std::cout << "Время первого и повторного захода в вершину:" << std::endl;
-	for (size_t i = 0; i < discoveryFinishTimes.size(); ++i)
+	for (size_t i = 0; i < m_discoveryFinishTimes.size(); ++i)
 	{
-		std::cout << "Вершина " << i << ": [" << discoveryFinishTimes[i].first << ", "
-				  << discoveryFinishTimes[i].second << "]" << std::endl;
+		std::cout << "Вершина " << i << ": [" << m_discoveryFinishTimes[i].first << ", "
+				  << m_discoveryFinishTimes[i].second << "]" << std::endl;
 	}
 }
 
@@ -149,7 +95,7 @@ AdjacencyMatrix Graph::EdgesToAdjacencyMatrix(const ListOfEdges& listOfEdges)
 {
 	if (listOfEdges.empty())
 	{
-		adjacencyMatrix.clear();
+		m_adjacencyMatrix.clear();
 	}
 
 	for (const auto& edge : listOfEdges)
@@ -157,10 +103,10 @@ AdjacencyMatrix Graph::EdgesToAdjacencyMatrix(const ListOfEdges& listOfEdges)
 		const int u = edge[0];
 		const int v = edge[1];
 		const int weight = edge[2];
-		adjacencyMatrix[u][v] = weight;
+		m_adjacencyMatrix[u][v] = weight;
 	}
 
-	return adjacencyMatrix;
+	return m_adjacencyMatrix;
 }
 
 ListOfEdges Graph::AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix)
@@ -173,7 +119,8 @@ ListOfEdges Graph::AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix
 		{
 			if (adjacencyMatrix[i][j] != NO_EDGE)
 			{
-				edges.push_back({ i, j, adjacencyMatrix[i][j] });
+				edges.push_back(
+					{ i, j, adjacencyMatrix[i][j] });
 			}
 		}
 	}
@@ -207,4 +154,201 @@ void Graph::PrintListOfEdges(const ListOfEdges& edges)
 	std::cout << std::endl;
 }
 
-AdjacencyMatrix Graph::GetAdjacencyMatrix() { return adjacencyMatrix; }
+double Graph::SubtractFromMatrix(Matrix& matrix)
+{
+	double totalReduction = 0.0;
+	const size_t size = matrix.GetSize();
+
+	for (size_t row = 0; row < size; ++row)
+	{
+		double minVal = INF;
+		for (size_t col = 0; col < size; ++col)
+		{
+			if (matrix(row, col) < minVal)
+			{
+				minVal = matrix(row, col);
+			}
+		}
+
+		if (minVal != INF && minVal != 0)
+		{
+			for (size_t col = 0; col < size; ++col)
+			{
+				if (matrix(row, col) != INF)
+				{
+					matrix(row, col) -= minVal;
+				}
+			}
+			totalReduction += minVal;
+		}
+	}
+
+	for (size_t col = 0; col < size; ++col)
+	{
+		double minVal = INF;
+		for (size_t row = 0; row < size; ++row)
+		{
+			if (matrix(row, col) < minVal)
+			{
+				minVal = matrix(row, col);
+			}
+		}
+
+		if (minVal != INF && minVal != 0)
+		{
+			for (size_t row = 0; row < size; ++row)
+			{
+				if (matrix(row, col) != INF)
+				{
+					matrix(row, col) -= minVal;
+				}
+			}
+			totalReduction += minVal;
+		}
+	}
+
+	return totalReduction;
+}
+
+std::vector<ZeroInfo> Graph::FindBestZeros(const Matrix& matrix)
+{
+	std::vector<ZeroInfo> zeros;
+	const size_t size = matrix.GetSize();
+
+	for (size_t row = 0; row < size; ++row)
+	{
+		for (size_t col = 0; col < size; ++col)
+		{
+			if (matrix(row, col) == 0)
+			{
+				double row_min = INF;
+				double col_min = INF;
+
+				for (size_t c = 0; c < size; ++c)
+				{
+					if (c != col && matrix(row, c) < row_min)
+					{
+						row_min = matrix(row, c);
+					}
+				}
+
+				for (size_t r = 0; r < size; ++r)
+				{
+					if (r != row && matrix(r, col) < col_min)
+					{
+						col_min = matrix(r, col);
+					}
+				}
+
+				const double penalty
+					= (row_min == INF ? 0 : row_min) + (col_min == INF ? 0 : col_min);
+				zeros.push_back({ row, col, penalty });
+			}
+		}
+	}
+
+	std::ranges::sort(
+		zeros, [](const ZeroInfo& a, const ZeroInfo& b) { return a.penalty > b.penalty; });
+
+	return zeros;
+}
+
+void Graph::AddInfinity(Matrix& matrix)
+{
+	const size_t size = matrix.GetSize();
+
+	if (size < 2)
+	{
+		return;
+	}
+
+	const size_t lastRemovedRow = matrix.GetLastRemovedRow();
+	const size_t lastRemovedCol = matrix.GetLastRemovedColumn();
+
+	const size_t currentRow = matrix.FindCurrentRowIndex(lastRemovedCol);
+	const size_t currentCol = matrix.FindCurrentColumnIndex(lastRemovedRow);
+
+	if (currentRow != static_cast<size_t>(-1) && currentCol != static_cast<size_t>(-1))
+	{
+		matrix(currentRow, currentCol) = INF;
+	}
+}
+
+void Graph::FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit)
+{
+	if (m.GetSize() < 2)
+	{
+		if (path.size() == m_numVertices - 1)
+		{
+			const size_t startVertex = path.front().first;
+			const size_t endVertex = path.back().second;
+
+			if (m_adjacencyMatrix[startVertex][endVertex] != INF)
+			{
+				const double totalWeight = bottomLimit + m_adjacencyMatrix[startVertex][endVertex];
+				if (totalWeight < m_record)
+				{
+					m_record = totalWeight;
+					m_bestCycle.path = path;
+					m_bestCycle.path.emplace_back(endVertex, startVertex);
+					m_bestCycle.totalWeight = totalWeight;
+					m_bestCycle.found = true;
+				}
+			}
+		}
+		return;
+	}
+	if (m.GetSize() == 2)
+	{
+		const double a = m(0, 1);
+		const double b = m(1, 0);
+
+		if (a != INF && b != INF)
+		{
+			auto newPath = path;
+			newPath.emplace_back(m.RowIndex(0), m.ColumnIndex(1));
+			newPath.emplace_back(m.RowIndex(1), m.ColumnIndex(0));
+
+			const double totalWeight = bottomLimit + a + b;
+
+			if (totalWeight < m_record)
+			{
+				m_record = totalWeight;
+				m_bestCycle.path = newPath;
+				m_bestCycle.totalWeight = totalWeight;
+				m_bestCycle.found = true;
+			}
+		}
+		return;
+	}
+	Matrix matrix(m);
+	bottomLimit += SubtractFromMatrix(matrix);
+	if (bottomLimit > m_record)
+	{
+		return;
+	}
+
+	const auto zeros = FindBestZeros(matrix);
+	if (zeros.empty())
+	{
+		return;
+	}
+	const auto edge = zeros.front();
+	auto newMatrix(matrix);
+	newMatrix.RemoveRowColumn(edge.row, edge.col);
+	auto newPath(path);
+	newPath.emplace_back(matrix.RowIndex(edge.row), matrix.ColumnIndex(edge.col));
+	AddInfinity(newMatrix);
+	FindMinCycle(newMatrix, newPath, bottomLimit);
+	newMatrix = matrix;
+	newMatrix(edge.row, edge.col) = INF;
+	FindMinCycle(newMatrix, path, bottomLimit);
+}
+
+bool Graph::IsCycleFound() const { return m_bestCycle.found; }
+
+double Graph::GetCycleWeight() const { return m_bestCycle.totalWeight; }
+
+const Edges& Graph::GetCyclePath() const { return m_bestCycle.path; }
+
+AdjacencyMatrix Graph::GetAdjacencyMatrix() { return m_adjacencyMatrix; }

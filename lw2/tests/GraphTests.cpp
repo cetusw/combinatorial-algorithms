@@ -13,7 +13,7 @@ TEST_CASE("FindMinHamiltonianCycle TEST") {
 
         REQUIRE(found);
         REQUIRE(totalWeight == 25);
-        REQUIRE(path == std::vector<int>{0, 1, 0});
+        REQUIRE(path == std::vector<double>{0, 1, 0});
     }
 
     SECTION("Три вершины с несколькими циклами") {
