@@ -18,9 +18,9 @@ public:
 	void AddEdge(int u, int v, int w);
 	void ReadGraphFromFile(std::ifstream& file);
 	void AddInfinity(Matrix& matrix);
-	void FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit);
+	void FindMinCycle(const Matrix& m, const Edges& path, int& bottomLimit);
 	bool IsCycleFound() const;
-	double GetCycleWeight() const;
+	int GetCycleWeight() const;
 	const Edges& GetCyclePath() const;
 	AdjacencyMatrix GetAdjacencyMatrix();
 	void SetAdjacencyMatrix(const AdjacencyMatrix& matrix);
@@ -32,7 +32,7 @@ public:
 	[[nodiscard]] HamiltonianCycleResult FindMinHamiltonianCycle() const;
 	void PrintHamiltonianCycle(const HamiltonianCycleResult& result);
 
-	double SubtractFromMatrix(Matrix& matrix);
+	int SubtractFromMatrix(Matrix& matrix);
 	std::vector<ZeroInfo> FindBestZeros(const Matrix& matrix);
 
 	AdjacencyMatrix EdgesToAdjacencyMatrix(const ListOfEdges& listOfEdges);

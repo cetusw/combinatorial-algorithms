@@ -12,7 +12,7 @@ int main(const int argc, const char * argv[])
 
 	Matrix matrix(g.GetAdjacencyMatrix());
 	Edges path;
-	double bot = 0;
+	int bot = 0;
 	g.FindMinCycle(matrix, path, bot);
 
 	if (g.IsCycleFound()) {

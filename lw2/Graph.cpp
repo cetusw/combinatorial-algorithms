@@ -22,6 +22,7 @@ void Graph::AddEdge(const int u, const int v, const int w)
 	}
 
 	m_adjacencyMatrix[u][v] = w;
+	m_adjacencyMatrix[v][u] = w;
 }
 
 void Graph::ReadGraphFromFile(std::ifstream& file)
@@ -40,45 +41,6 @@ void Graph::ReadGraphFromFile(std::ifstream& file)
 		m_adjacencyMatrix[u][v] = w;
 		m_adjacencyMatrix[v][u] = w;
 	}
-}
-
-void Graph::ProcessDFS(const int vertex, std::vector<bool>& visited)
-{
-	visited[vertex] = true;
-	std::cout << vertex << " ";
-	m_discoveryFinishTimes[vertex].first = ++m_timeCounter;
-
-	for (int i = 0; i < m_adjacencyMatrix[vertex].size(); ++i)
-	{
-		if (m_adjacencyMatrix[vertex][i] != NO_EDGE && !visited[i])
-		{
-			ProcessDFS(i, visited);
-		}
-	}
-
-	m_discoveryFinishTimes[vertex].second = ++m_timeCounter;
-}
-
-void Graph::DFS(const int startVertex)
-{
-	std::vector visited(m_numVertices, false);
-	m_discoveryFinishTimes.resize(m_numVertices, { 0, 0 });
-	m_timeCounter = 0;
-
-	if (startVertex >= 0 && startVertex < m_numVertices && !visited[startVertex])
-	{
-		ProcessDFS(startVertex, visited);
-	}
-
-	for (int i = 0; i < m_numVertices; ++i)
-	{
-		if (!visited[i])
-		{
-			ProcessDFS(i, visited);
-		}
-	}
-
-	std::cout << std::endl;
 }
 
 void Graph::PrintDiscoveryFinishTimes() const
@@ -154,14 +116,14 @@ void Graph::PrintListOfEdges(const ListOfEdges& edges)
 	std::cout << std::endl;
 }
 
-double Graph::SubtractFromMatrix(Matrix& matrix)
+int Graph::SubtractFromMatrix(Matrix& matrix)
 {
-	double totalReduction = 0.0;
+	int totalReduction = 0;
 	const size_t size = matrix.GetSize();
 
 	for (size_t row = 0; row < size; ++row)
 	{
-		double minVal = INF;
+		int minVal = INF;
 		for (size_t col = 0; col < size; ++col)
 		{
 			if (matrix(row, col) < minVal)
@@ -185,7 +147,7 @@ double Graph::SubtractFromMatrix(Matrix& matrix)
 
 	for (size_t col = 0; col < size; ++col)
 	{
-		double minVal = INF;
+		int minVal = INF;
 		for (size_t row = 0; row < size; ++row)
 		{
 			if (matrix(row, col) < minVal)
@@ -221,8 +183,8 @@ std::vector<ZeroInfo> Graph::FindBestZeros(const Matrix& matrix)
 		{
 			if (matrix(row, col) == 0)
 			{
-				double row_min = INF;
-				double col_min = INF;
+				int row_min = INF;
+				int col_min = INF;
 
 				for (size_t c = 0; c < size; ++c)
 				{
@@ -240,7 +202,7 @@ std::vector<ZeroInfo> Graph::FindBestZeros(const Matrix& matrix)
 					}
 				}
 
-				const double penalty
+				const int penalty
 					= (row_min == INF ? 0 : row_min) + (col_min == INF ? 0 : col_min);
 				zeros.push_back({ row, col, penalty });
 			}
@@ -274,7 +236,7 @@ void Graph::AddInfinity(Matrix& matrix)
 	}
 }
 
-void Graph::FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit)
+void Graph::FindMinCycle(const Matrix& m, const Edges& path, int& bottomLimit)
 {
 	if (m.GetSize() < 2)
 	{
@@ -285,7 +247,7 @@ void Graph::FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit
 
 			if (m_adjacencyMatrix[startVertex][endVertex] != INF)
 			{
-				const double totalWeight = bottomLimit + m_adjacencyMatrix[startVertex][endVertex];
+				const int totalWeight = bottomLimit + m_adjacencyMatrix[startVertex][endVertex];
 				if (totalWeight < m_record)
 				{
 					m_record = totalWeight;
@@ -300,8 +262,8 @@ void Graph::FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit
 	}
 	if (m.GetSize() == 2)
 	{
-		const double a = m(0, 1);
-		const double b = m(1, 0);
+		const int a = m(0, 1);
+		const int b = m(1, 0);
 
 		if (a != INF && b != INF)
 		{
@@ -309,7 +271,7 @@ void Graph::FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit
 			newPath.emplace_back(m.RowIndex(0), m.ColumnIndex(1));
 			newPath.emplace_back(m.RowIndex(1), m.ColumnIndex(0));
 
-			const double totalWeight = bottomLimit + a + b;
+			const int totalWeight = bottomLimit + a + b;
 
 			if (totalWeight < m_record)
 			{
@@ -347,7 +309,7 @@ void Graph::FindMinCycle(const Matrix& m, const Edges& path, double& bottomLimit
 
 bool Graph::IsCycleFound() const { return m_bestCycle.found; }
 
-double Graph::GetCycleWeight() const { return m_bestCycle.totalWeight; }
+int Graph::GetCycleWeight() const { return m_bestCycle.totalWeight; }
 
 const Edges& Graph::GetCyclePath() const { return m_bestCycle.path; }
 

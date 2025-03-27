@@ -20,7 +20,7 @@ struct HamiltonianCycleResult {
 struct ZeroInfo {
 	size_t row;
 	size_t col;
-	double penalty;
+	int penalty;
 };
 
 #endif // TYPES_H
