@@ -2,7 +2,7 @@
 #include "Types.h"
 #include <iostream>
 
-int main(const int argc, const char * argv[])
+int main(const int argc, const char* argv[])
 {
 	Graph g;
 	std::ifstream input(argv[1]);
@@ -15,14 +15,26 @@ int main(const int argc, const char * argv[])
 	int bot = 0;
 	g.FindMinCycle(matrix, path, bot);
 
-	if (g.IsCycleFound()) {
-		std::cout << "Minimal cycle weight: " << g.GetCycleWeight() << std::endl;
-		std::cout << "Path:" << std::endl;
-		for (const auto& edge : g.GetCyclePath()) {
-			std::cout << edge.first << " -> " << edge.second << std::endl;
+	if (g.IsCycleFound())
+	{
+		std::cout << g.GetCycleWeight() << " ";
+		bool isStart = true;
+		for (const auto& edge : g.GetCyclePath())
+		{
+			if (isStart)
+			{
+				std::cout << edge.first << " " << edge.second << " ";
+				isStart = false;
+			}
+			else
+			{
+				std::cout << edge.second << " ";
+			}
 		}
-	} else {
-		std::cout << "Hamiltonian cycle not found!" << std::endl;
+	}
+	else
+	{
+		std::cout << "Гамильтонов цикл не найден" << std::endl;
 	}
 	return 0;
 }

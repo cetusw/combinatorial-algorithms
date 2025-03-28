@@ -6,26 +6,9 @@
 
 Graph::Graph() = default;
 
-void Graph::AddEdge(const int u, const int v, const int w)
-{
-	const int maxVertex = std::max(u, v);
-	const int requiredSize = maxVertex + 1;
+void Graph::AddEdge(const int u, const int v, const int w) { m_adjacencyMatrix[u][v] = w; }
 
-	if (requiredSize > m_numVertices)
-	{
-		m_adjacencyMatrix.resize(requiredSize);
-		for (auto& row : m_adjacencyMatrix)
-		{
-			row.resize(requiredSize, NO_EDGE);
-		}
-		m_numVertices = requiredSize;
-	}
-
-	m_adjacencyMatrix[u][v] = w;
-	m_adjacencyMatrix[v][u] = w;
-}
-
-void Graph::ReadGraphFromFile(std::ifstream& file)
+void Graph::ReadGraphFromFile(std::istream& file)
 {
 	m_adjacencyMatrix.clear();
 
@@ -38,18 +21,7 @@ void Graph::ReadGraphFromFile(std::ifstream& file)
 	for (int i = 0; i < edgeCount; ++i)
 	{
 		file >> u >> v >> w;
-		m_adjacencyMatrix[u][v] = w;
-		m_adjacencyMatrix[v][u] = w;
-	}
-}
-
-void Graph::PrintDiscoveryFinishTimes() const
-{
-	std::cout << "Время первого и повторного захода в вершину:" << std::endl;
-	for (size_t i = 0; i < m_discoveryFinishTimes.size(); ++i)
-	{
-		std::cout << "Вершина " << i << ": [" << m_discoveryFinishTimes[i].first << ", "
-				  << m_discoveryFinishTimes[i].second << "]" << std::endl;
+		AddEdge(u, v, w);
 	}
 }
 
@@ -81,8 +53,7 @@ ListOfEdges Graph::AdjacencyMatrixToEdges(const AdjacencyMatrix& adjacencyMatrix
 		{
 			if (adjacencyMatrix[i][j] != NO_EDGE)
 			{
-				edges.push_back(
-					{ i, j, adjacencyMatrix[i][j] });
+				edges.push_back({ i, j, adjacencyMatrix[i][j] });
 			}
 		}
 	}
@@ -183,27 +154,26 @@ std::vector<ZeroInfo> Graph::FindBestZeros(const Matrix& matrix)
 		{
 			if (matrix(row, col) == 0)
 			{
-				int row_min = INF;
-				int col_min = INF;
+				int rowMin = INF;
+				int colMin = INF;
 
 				for (size_t c = 0; c < size; ++c)
 				{
-					if (c != col && matrix(row, c) < row_min)
+					if (c != col && matrix(row, c) < rowMin)
 					{
-						row_min = matrix(row, c);
+						rowMin = matrix(row, c);
 					}
 				}
 
 				for (size_t r = 0; r < size; ++r)
 				{
-					if (r != row && matrix(r, col) < col_min)
+					if (r != row && matrix(r, col) < colMin)
 					{
-						col_min = matrix(r, col);
+						colMin = matrix(r, col);
 					}
 				}
 
-				const int penalty
-					= (row_min == INF ? 0 : row_min) + (col_min == INF ? 0 : col_min);
+				const int penalty = (rowMin == INF ? 0 : rowMin) + (colMin == INF ? 0 : colMin);
 				zeros.push_back({ row, col, penalty });
 			}
 		}
@@ -245,9 +215,9 @@ void Graph::FindMinCycle(const Matrix& m, const Edges& path, int& bottomLimit)
 			const size_t startVertex = path.front().first;
 			const size_t endVertex = path.back().second;
 
-			if (m_adjacencyMatrix[startVertex][endVertex] != INF)
+			if (m_adjacencyMatrix[endVertex][startVertex] != INF)
 			{
-				const int totalWeight = bottomLimit + m_adjacencyMatrix[startVertex][endVertex];
+				const int totalWeight = bottomLimit + m_adjacencyMatrix[endVertex][startVertex];
 				if (totalWeight < m_record)
 				{
 					m_record = totalWeight;

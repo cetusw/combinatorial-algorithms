@@ -1,81 +1,239 @@
 #define CATCH_CONFIG_MAIN
 #include "catch2/catch_all.hpp"
-#include <catch2/catch_approx.hpp>
 #include "../Graph.h"
 #include <vector>
 
-TEST_CASE("FindMinHamiltonianCycle TEST") {
-    SECTION("Граф с двумя вершинами") {
-        Graph g;
-        g.AddEdge(0, 1, 10);
-        g.AddEdge(1, 0, 15);
-        auto [path, totalWeight, found] = g.FindMinHamiltonianCycle();
+TEST_CASE("Test 1: Один цикл") {
+    Graph g;
+    std::istringstream input(
+        "4 4\n"
+        "0 1 1\n"
+        "1 2 1\n"
+        "2 3 1\n"
+        "3 0 1\n"
+    );
+    g.ReadGraphFromFile(input);
 
-        REQUIRE(found);
-        REQUIRE(totalWeight == 25);
-        REQUIRE(path == std::vector<double>{0, 1, 0});
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE(g.IsCycleFound());
+    REQUIRE(g.GetCycleWeight() == 4);
+
+    std::vector expected = {0, 1, 2, 3, 0};
+    std::vector<int> actual;
+    for (const auto& edge : g.GetCyclePath()) {
+        actual.push_back(edge.first);
     }
+    actual.push_back(g.GetCyclePath().back().second);
 
-    SECTION("Три вершины с несколькими циклами") {
-        Graph g;
-        g.AddEdge(0, 1, 1);
-        g.AddEdge(1, 2, 2);
-        g.AddEdge(2, 0, 3);
-        g.AddEdge(0, 2, 10);
-        g.AddEdge(2, 1, 5);
-        auto [path, totalWeight, found] = g.FindMinHamiltonianCycle();
-
-        REQUIRE(found);
-        REQUIRE(totalWeight == 6);
-        REQUIRE(path == std::vector<int>{0, 1, 2, 0});
-    }
-
-    SECTION("Нет цикла") {
-        Graph g;
-        g.AddEdge(0, 1, 1);
-        g.AddEdge(1, 2, 2);
-        auto result = g.FindMinHamiltonianCycle();
-
-        REQUIRE_FALSE(result.found);
-    }
-
-    SECTION("Меньше 2 вершин") {
-        Graph g;
-        g.AddEdge(0, 0, 0);
-        REQUIRE_THROWS_AS(g.FindMinHamiltonianCycle(), std::invalid_argument);
-    }
-
-	SECTION("Граф с большим количеством вершин и рёбер") {
-    	Graph g;
-    	g.AddEdge(0, 1, 1);
-    	g.AddEdge(1, 2, 2);
-    	g.AddEdge(2, 3, 3);
-    	g.AddEdge(3, 4, 4);
-    	g.AddEdge(4, 0, 5);
-    	g.AddEdge(0, 2, 6);
-    	g.AddEdge(1, 3, 7);
-    	g.AddEdge(2, 4, 8);
-    	g.AddEdge(3, 0, 9);
-    	g.AddEdge(4, 1, 10);
-    	auto [path, totalWeight, found] = g.FindMinHamiltonianCycle();
-
-    	REQUIRE(found);
-    	REQUIRE(totalWeight == 15);
-    	REQUIRE(path == std::vector<int>{0, 1, 2, 3, 4, 0});
-    }
-
-	SECTION("Граф с несколькими вершинами и несколькими циклами с одинаковым весом") {
-    	Graph g;
-    	g.AddEdge(0, 1, 1);
-    	g.AddEdge(1, 2, 1);
-    	g.AddEdge(2, 3, 1);
-    	g.AddEdge(3, 0, 1);
-    	g.AddEdge(0, 2, 1);
-    	g.AddEdge(1, 3, 1);
-    	auto [path, totalWeight, found] = g.FindMinHamiltonianCycle();
-
-    	REQUIRE(found);
-    	REQUIRE(totalWeight == 4);
-    	REQUIRE((path == std::vector<int>{0, 1, 2, 3, 0} || path == std::vector<int>{0, 2, 1, 3, 0}));
-    }
+    REQUIRE(actual == expected);
 }
+
+TEST_CASE("Test 2: Граф с альтернативными путями") {
+    Graph g;
+    std::istringstream input(
+        "4 8\n"
+        "0 1 10\n"
+        "0 2 5\n"
+        "1 2 2\n"
+        "1 3 8\n"
+        "2 1 3\n"
+        "2 3 4\n"
+        "3 0 2\n"
+        "3 1 7\n"
+    );
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE(g.IsCycleFound());
+    REQUIRE(g.GetCycleWeight() == 18);
+
+    std::vector expected = {0, 2, 1, 3, 0};
+    std::vector<int> actual;
+    for (const auto& edge : g.GetCyclePath()) {
+        actual.push_back(edge.first);
+    }
+    actual.push_back(g.GetCyclePath().back().second);
+
+    REQUIRE(actual == expected);
+}
+
+TEST_CASE("Test 3: Несколько циклов") {
+	Graph g;
+	std::istringstream input(
+		"4 8\n"
+		"0 1 1\n"
+		"1 2 1\n"
+		"2 3 1\n"
+		"3 0 1\n"
+		"0 2 5\n"
+		"2 0 5\n"
+		"1 3 5\n"
+		"3 1 5\n"
+	);
+	g.ReadGraphFromFile(input);
+
+	Matrix matrix(g.GetAdjacencyMatrix());
+	Edges path;
+	int bottomLimit = 0;
+	g.FindMinCycle(matrix, path, bottomLimit);
+
+	REQUIRE(g.IsCycleFound());
+	REQUIRE(g.GetCycleWeight() == 4);
+
+	std::vector expected = {0, 2, 1, 3, 0};
+	std::vector<int> actual;
+	for (const auto& edge : g.GetCyclePath()) {
+		actual.push_back(edge.first);
+	}
+	actual.push_back(g.GetCyclePath().back().second);
+
+	REQUIRE(actual == expected);
+}
+
+TEST_CASE("Test 4: Нет цикла") {
+    Graph g;
+    std::istringstream input(
+        "3 2\n"
+        "0 1 1\n"
+        "1 2 1\n"
+    );
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE_FALSE(g.IsCycleFound());
+}
+
+TEST_CASE("Test 5: Полный граф") {
+    Graph g;
+    std::istringstream input(
+        "3 6\n"
+        "0 1 1\n"
+        "1 0 2\n"
+        "0 2 3\n"
+        "2 0 4\n"
+        "1 2 5\n"
+        "2 1 6\n"
+    );
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE(g.IsCycleFound());
+    REQUIRE(g.GetCycleWeight() == 10);
+
+	std::vector expected = {0, 1, 2, 0};
+	std::vector<int> actual;
+	for (const auto& edge : g.GetCyclePath()) {
+		actual.push_back(edge.first);
+	}
+	actual.push_back(g.GetCyclePath().back().second);
+
+	REQUIRE(actual == expected);
+}
+
+TEST_CASE("Test 6: Пустой граф") {
+    Graph g;
+    std::istringstream input("0 0");
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+	g.FindMinCycle(matrix, path, bottomLimit);
+
+	REQUIRE_FALSE(g.IsCycleFound());
+}
+
+TEST_CASE("Test 7: Одна вершина") {
+    Graph g;
+    std::istringstream input("1 0");
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+	g.FindMinCycle(matrix, path, bottomLimit);
+
+	REQUIRE_FALSE(g.IsCycleFound());
+}
+
+TEST_CASE("Test 8: Две вершины с циклом") {
+    Graph g;
+    std::istringstream input(
+        "2 2\n"
+        "0 1 5\n"
+        "1 0 3\n"
+    );
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE(g.IsCycleFound());
+    REQUIRE(g.GetCycleWeight() == 8);
+
+	std::vector expected = {0, 1, 0};
+	std::vector<int> actual;
+	for (const auto& edge : g.GetCyclePath()) {
+		actual.push_back(edge.first);
+	}
+	actual.push_back(g.GetCyclePath().back().second);
+
+	REQUIRE(actual == expected);
+}
+
+TEST_CASE("Test 9: Линейный граф") {
+    Graph g;
+    std::istringstream input(
+        "4 3\n"
+        "0 1 1\n"
+        "1 2 1\n"
+        "2 3 1\n"
+    );
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE_FALSE(g.IsCycleFound());
+}
+
+TEST_CASE("Test 10: Граф с тупиком") {
+    Graph g;
+    std::istringstream input(
+        "4 5\n"
+        "0 1 1\n"
+        "1 2 1\n"
+        "2 3 1\n"
+        "3 1 5\n"
+        "0 3 10\n"
+    );
+    g.ReadGraphFromFile(input);
+
+    Matrix matrix(g.GetAdjacencyMatrix());
+    Edges path;
+    int bottomLimit = 0;
+    g.FindMinCycle(matrix, path, bottomLimit);
+
+    REQUIRE_FALSE(g.IsCycleFound());
+}
+
