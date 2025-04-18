@@ -87,7 +87,7 @@ void Graph::PrintListOfEdges(const ListOfEdges& edges)
 	std::cout << std::endl;
 }
 
-int Graph::SubtractFromMatrix(Matrix& matrix)
+int Graph::	SubtractFromMatrix(Matrix& matrix)
 {
 	int totalReduction = 0;
 	const size_t size = matrix.GetSize();
@@ -202,7 +202,7 @@ void Graph::AddInfinity(Matrix& matrix)
 
 	if (currentRow != static_cast<size_t>(-1) && currentCol != static_cast<size_t>(-1))
 	{
-		matrix(currentRow, currentCol) = INF;
+		matrix(currentCol, currentRow) = INF;
 	}
 }
 

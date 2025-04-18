@@ -217,7 +217,7 @@ TEST_CASE("Test 9: Линейный граф") {
     REQUIRE_FALSE(g.IsCycleFound());
 }
 
-TEST_CASE("Test 10: Граф с тупиком") {
+TEST_CASE("Test 10: Граф с вершиной, в которую невозможно попасть") {
     Graph g;
     std::istringstream input(
         "4 5\n"

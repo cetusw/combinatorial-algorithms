@@ -11,7 +11,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(lw2 Graph.cpp Matrix.cpp main.cpp)
-add_executable(graph-tests Graph.cpp Matrix.cpp tests/GraphTests.cpp)
+add_executable(lw2 Matrix.cpp Graph.cpp main.cpp)
+add_executable(graph-tests Matrix.cpp Graph.cpp tests/GraphTests.cpp)
 
 target_link_libraries(graph-tests PRIVATE Catch2::Catch2WithMain)
