@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <queue>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -12,19 +13,73 @@ Graph::Graph() = default;
 
 void Graph::ReadGraphFromFile(std::istream& file)
 {
-	m_adjacencyMatrix.clear();
+	m_faces.clear();
+	m_vertices.clear();
+	m_edges.clear();
 
-	int numVertices, edgeCount;
-	file >> numVertices >> edgeCount;
-
-	m_adjacencyMatrix.resize(numVertices, std::vector(numVertices, INF));
-
-	int u, v;
-	for (int i = 0; i < edgeCount; ++i)
+	int faceId = 0;
+	std::string line;
+	while (std::getline(file, line))
 	{
-		file >> u >> v;
-		AddEdge(AddVertex(u), AddVertex(v));
+		std::stringstream ss(line);
+		std::vector<std::shared_ptr<Vertex>> faceVertices;
+		int vertexId;
+
+		while (ss >> vertexId)
+		{
+			auto it = std::ranges::find_if(
+				m_vertices, [vertexId](const auto& v) { return v->GetId() == vertexId; });
+
+			if (it != m_vertices.end())
+			{
+				faceVertices.push_back(*it);
+			}
+			else
+			{
+				auto newVertex = AddVertex(vertexId);
+				faceVertices.push_back(newVertex);
+			}
+		}
+
+		std::vector<EdgePtr> faceEdges;
+		const size_t n = faceVertices.size();
+
+		auto newFace = std::make_shared<Face>(faceVertices, ++faceId);
+		m_faces.push_back(newFace);
+
+		for (size_t i = 0; i < n; ++i)
+		{
+			auto& v1 = faceVertices[i];
+			auto& v2 = faceVertices[(i + 1) % n];
+
+			EdgePtr existingEdge = FindEdge(v1, v2);
+
+			if (!existingEdge)
+			{
+				EdgePtr newEdge = AddEdge(v1, v2);
+				newEdge->SetLeftFace(m_faces.back());
+				faceEdges.push_back(newEdge);
+			}
+			else
+			{
+				existingEdge->SetRightFace(m_faces.back());
+				faceEdges.push_back(existingEdge);
+			}
+		}
 	}
+}
+
+EdgePtr Graph::FindEdge(const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vertex>& v2)
+{
+	for (const auto& edge : m_edges)
+	{
+		if ((edge->GetStart() == v1 && edge->GetEnd() == v2)
+			|| (edge->GetStart() == v2 && edge->GetEnd() == v1))
+		{
+			return edge;
+		}
+	}
+	return nullptr;
 }
 
 std::shared_ptr<Vertex> Graph::AddVertex(int id)
@@ -37,6 +92,8 @@ std::shared_ptr<Vertex> Graph::AddVertex(int id)
 EdgePtr Graph::AddEdge(
 	const std::shared_ptr<Vertex>& startVertex, const std::shared_ptr<Vertex>& endVertex)
 {
+	if (startVertex == endVertex) return nullptr;
+	if (FindEdge(startVertex, endVertex)) return nullptr;
 	auto e = std::make_unique<Edge>(startVertex, endVertex);
 	m_edges.push_back(std::move(e));
 	EdgePtr edgePtr = m_edges.back();
@@ -46,12 +103,12 @@ EdgePtr Graph::AddEdge(
 
 	return edgePtr;
 }
-std::shared_ptr<Face> Graph::AddFace(std::shared_ptr<Face> edges)
+std::shared_ptr<Face> Graph::AddFace(const std::vector<std::shared_ptr<Vertex>>& vertices)
 {
 	static int faceIdCounter = 0;
-	edges->SetId(faceIdCounter++);
-	m_faces.push_back(edges);
-	return edges;
+	const auto face = std::make_shared<Face>(vertices, faceIdCounter++);
+	m_faces.push_back(face);
+	return face;
 }
 
 void Graph::RemoveVertex(const std::shared_ptr<Vertex>& vertexToRemove)
@@ -80,18 +137,18 @@ void Graph::RemoveEdge(const EdgePtr& edgeToRemove)
 	edgeToRemove->GetEnd()->RemoveIncidentalEdge(edgeToRemove);
 }
 
-Graph Graph::BuildDual(const Graph& original)
+Graph Graph::BuildDual(const Graph& originalGraph)
 {
 	Graph dual;
 	std::unordered_map<std::shared_ptr<Face>, std::shared_ptr<Vertex>> faceToVertex;
 
-	for (const auto& face : original.GetFaces())
+	for (const auto& face : originalGraph.GetFaces())
 	{
 		const auto dualVertex = dual.AddVertex(face->GetId());
 		faceToVertex[face] = dualVertex;
 	}
 
-	for (const auto& edge : original.GetEdges())
+	for (const auto& edge : originalGraph.GetEdges())
 	{
 		auto leftFace = edge->GetLeftFace();
 		auto rightFace = edge->GetRightFace();
@@ -108,8 +165,8 @@ Graph Graph::BuildDual(const Graph& original)
 std::vector<std::shared_ptr<Vertex>> Graph::GetSecondNeighborhood(
 	const std::shared_ptr<Vertex>& source)
 {
-	std::unordered_set<std::shared_ptr<Vertex>> directNeighbors;
-	std::unordered_set<std::shared_ptr<Vertex>> secondNeighbors;
+	std::unordered_set<std::shared_ptr<Vertex>> directNeighbors{};
+	std::unordered_set<std::shared_ptr<Vertex>> secondNeighbors{};
 
 	if (std::ranges::find(m_vertices, source) == m_vertices.end())
 	{
@@ -135,8 +192,10 @@ std::vector<std::shared_ptr<Vertex>> Graph::GetSecondNeighborhood(
 			std::shared_ptr<Vertex> candidate
 				= (edge->GetStart() == directNeighbor) ? edge->GetEnd() : edge->GetStart();
 
-			if (candidate != source && !directNeighbors.contains(candidate)
-				&& std::ranges::find(m_vertices, candidate) != m_vertices.end())
+			if (candidate != source
+				&& !directNeighbors.contains(candidate)
+				&& std::ranges::find(m_vertices, candidate) != m_vertices.end()
+				&& !candidate->GetIsMerged())
 			{
 				secondNeighbors.insert(candidate);
 			}
@@ -154,13 +213,15 @@ void Graph::MergeVertices(
 		return;
 	}
 
-	for (const auto& edge : toMerge->GetIncidentalEdges())
+	for (const auto& edge : target->GetIncidentalEdges())
 	{
-		auto neighbor = edge->GetStart() == toMerge ? edge->GetEnd() : edge->GetStart();
-		AddEdge(target, neighbor);
-		edge->SetIsMerged(true);
+		auto neighbor = edge->GetStart() == target ? edge->GetEnd() : edge->GetStart();
+		if (!FindEdge(target, neighbor))
+		{
+			AddEdge(target, neighbor);
+		}
+		RemoveEdge(edge);
 	}
-
 	toMerge->SetIsMerged(true);
 }
 
@@ -195,35 +256,18 @@ void Graph::ProcessErshovColoring()
 		startVertex->SetColor(currentColor);
 		processed.insert(startVertex);
 
-		std::queue<std::shared_ptr<Vertex>> queue;
 		auto secondNeighbors = GetSecondNeighborhood(startVertex);
-		for (const auto& neighbor : secondNeighbors)
+		while (!secondNeighbors.empty())
 		{
-			if (!processed.contains(neighbor))
+			for (const auto& candidate : secondNeighbors)
 			{
-				queue.push(neighbor);
-			}
-		}
-
-		while (!queue.empty())
-		{
-			auto candidate = queue.front();
-			queue.pop();
-			if (processed.contains(candidate))
-			{
-				continue;
-			}
-
-			candidate->SetColor(currentColor);
-			MergeVertices(startVertex, candidate);
-			processed.insert(candidate);
-
-			auto newNeighbors = GetSecondNeighborhood(startVertex);
-			for (const auto& v : newNeighbors)
-			{
-				if (!processed.contains(v) && v != startVertex)
+				if (!processed.contains(candidate))
 				{
-					queue.push(v);
+					candidate->SetColor(currentColor);
+					MergeVertices(startVertex, candidate);
+					processed.insert(candidate);
+					secondNeighbors = GetSecondNeighborhood(startVertex);
+					break;
 				}
 			}
 		}
@@ -256,57 +300,4 @@ void Graph::ProcessErshovFaceColoring()
 			face->SetColor(faceToDualVertex[face]->GetColor());
 		}
 	}
-}
-
-void Graph::DefineFaces()
-{
-	std::unordered_set<EdgePtr> visitedEdges;
-	for (const auto& edge : m_edges)
-	{
-		if (visitedEdges.contains(edge))
-		{
-			continue;
-		}
-
-		std::vector<EdgePtr> cycle;
-		if (FindCycleDFS(edge->GetStart(), nullptr, visitedEdges, cycle))
-		{
-		}
-	}
-}
-
-bool Graph::FindCycleDFS(const std::shared_ptr<Vertex>& current,
-	const std::shared_ptr<Vertex>& parent, std::unordered_set<EdgePtr>& visitedEdges,
-	std::vector<EdgePtr>& cycle)
-{
-	for (const auto& edge : current->GetIncidentalEdges())
-	{
-		if (visitedEdges.contains(edge))
-		{
-			continue;
-		}
-
-		auto neighbor = (edge->GetStart() == current) ? edge->GetEnd() : edge->GetStart();
-
-		if (neighbor == parent)
-		{
-			continue;
-		}
-
-		if (visitedEdges.insert(edge).second)
-		{
-			cycle.push_back(edge);
-			if (FindCycleDFS(neighbor, current, visitedEdges, cycle))
-			{
-				return true;
-			}
-			cycle.pop_back();
-		}
-		else
-		{
-			cycle.push_back(edge);
-			return true;
-		}
-	}
-	return false;
 }

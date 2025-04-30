@@ -1,20 +1,18 @@
-//
-// Created by cetus on 4/3/25.
-//
-
 #ifndef FACE_H
 #define FACE_H
 
 #include "../Interface/IGraphElement.h"
+#include "../Vertex/Vertex.h"
+
 #include <list>
 
 class Face : public IGraphElement
 {
 public:
-	explicit Face(std::list<EdgePtr> edges, int newId);
-	void AddEdge(const EdgePtr& newEdge);
+	explicit Face(std::vector<std::shared_ptr<Vertex>> vertices, int newId);
+	void AddVertex(const EdgePtr& newEdge);
 
-	std::list<EdgePtr>& GetEdges();
+	std::vector<std::shared_ptr<Vertex>>& GetVertices();
 	[[nodiscard]] int GetId() const;
 	[[nodiscard]] int GetColor() const;
 
@@ -22,7 +20,7 @@ public:
 	void SetId(int newId);
 
 private:
-	std::list<EdgePtr> m_edges;
+	std::vector<std::shared_ptr<Vertex>> m_vertices;
 	int m_color;
 	int m_id;
 };

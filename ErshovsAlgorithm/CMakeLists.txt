@@ -3,14 +3,25 @@ project(ErshovsAlgorithm)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ErshovsAlgorithm main.cpp
+find_package(GTest REQUIRED)
+
+add_library(graphlib
         Graph/Graph.cpp
-        Graph/Graph.h
         Vertex/Vertex.cpp
-        Vertex/Vertex.h
         Edge/Edge.cpp
-        Edge/Edge.h
         Face/Face.cpp
-        Face/Face.h
-        Consts.h
-        Interface/IGraphElement.h)
+)
+
+target_include_directories(graphlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(ErshovsAlgorithm main.cpp)
+target_link_libraries(ErshovsAlgorithm PRIVATE graphlib)
+
+add_executable(ershov-tests Test/ErshovAlgorithmTest.cpp)
+
+target_link_libraries(ershov-tests
+        PRIVATE
+        GTest::GTest
+        GTest::Main
+        graphlib
+)

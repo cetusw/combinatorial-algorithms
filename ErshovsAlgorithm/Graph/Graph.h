@@ -27,12 +27,12 @@ public:
 	std::shared_ptr<Vertex> AddVertex(int id);
 	EdgePtr AddEdge(
 		const std::shared_ptr<Vertex>& startVertex, const std::shared_ptr<Vertex>& endVertex);
-	std::shared_ptr<Face> AddFace(std::shared_ptr<Face> edges);
+	std::shared_ptr<Face> AddFace(const std::vector<std::shared_ptr<Vertex>>& vertices);
 
 	void RemoveVertex(const std::shared_ptr<Vertex>& vertexToRemove);
 	void RemoveEdge(const EdgePtr& edgeToRemove);
 
-	static Graph BuildDual(const Graph& original);
+	static Graph BuildDual(const Graph& originalGraph);
 	std::vector<std::shared_ptr<Vertex>> GetSecondNeighborhood(
 		const std::shared_ptr<Vertex>& source);
 	void MergeVertices(
@@ -44,9 +44,8 @@ public:
 
 	void ProcessErshovColoring();
 	void ProcessErshovFaceColoring();
-	void DefineFaces();
-	static bool FindCycleDFS(const std::shared_ptr<Vertex>& current, const std::shared_ptr<Vertex>& parent,
-		std::unordered_set<EdgePtr>& visitedEdges, std::vector<EdgePtr>& cycle);
+
+	EdgePtr FindEdge(const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vertex>& v2);
 
 private:
 	std::vector<std::shared_ptr<Vertex>> m_vertices;

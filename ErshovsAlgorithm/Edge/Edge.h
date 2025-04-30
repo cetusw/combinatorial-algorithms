@@ -4,12 +4,11 @@
 
 #ifndef EDGE_H
 #define EDGE_H
-#include "../Face/Face.h"
 #include "../Interface/IGraphElement.h"
-#include "../Vertex/Vertex.h"
 
 class Vertex;
 class Edge;
+class Face;
 
 class Edge : public IGraphElement
 {
@@ -18,16 +17,12 @@ public:
 
 	[[nodiscard]] std::shared_ptr<Vertex> GetStart() const;
 	[[nodiscard]] std::shared_ptr<Vertex> GetEnd() const;
-	[[nodiscard]] Edge* GetNext() const;
-	[[nodiscard]] Edge* GetPrev() const;
 	[[nodiscard]] std::shared_ptr<Face> GetLeftFace() const;
 	[[nodiscard]] std::shared_ptr<Face> GetRightFace() const;
 	[[nodiscard]] bool GetIsMerged() const;
 
 	void SetStart(const std::shared_ptr<Vertex>& newStart);
 	void SetEnd(const std::shared_ptr<Vertex>& newEnd);
-	void SetNext(Edge* newNext);
-	void SetPrev(Edge* newPrev);
 	void SetLeftFace(const std::shared_ptr<Face>& newFace);
 	void SetRightFace(const std::shared_ptr<Face>& newFace);
 	void SetIsMerged(bool isMerged);
