@@ -1,16 +1,12 @@
-//
-// Created by cetus on 4/3/25.
-//
-
 #ifndef EDGE_H
 #define EDGE_H
-#include "../Interface/IGraphElement.h"
+#include <memory>
 
 class Vertex;
 class Edge;
 class Face;
 
-class Edge : public IGraphElement
+class Edge
 {
 public:
 	Edge(const std::shared_ptr<Vertex>& start, const std::shared_ptr<Vertex>& end);
@@ -30,8 +26,6 @@ public:
 private:
 	std::shared_ptr<Vertex> m_start;
 	std::shared_ptr<Vertex> m_end;
-	Edge* m_next;
-	Edge* m_prev;
 	std::shared_ptr<Face> m_leftFace;
 	std::shared_ptr<Face> m_rightFace;
 	bool m_isMerged;

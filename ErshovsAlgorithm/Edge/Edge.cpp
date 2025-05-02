@@ -3,8 +3,6 @@
 Edge::Edge(const std::shared_ptr<Vertex>& start, const std::shared_ptr<Vertex>& end)
 	: m_start(start)
 	, m_end(end)
-	, m_next(nullptr)
-	, m_prev(nullptr)
 	, m_isMerged(false)
 {
 }

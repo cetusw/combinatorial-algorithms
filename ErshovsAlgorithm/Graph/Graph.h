@@ -1,7 +1,3 @@
-//
-// Created by cetus on 4/3/25.
-//
-
 #ifndef GRAPH_H
 #define GRAPH_H
 
@@ -25,12 +21,12 @@ public:
 	void ReadGraphFromFile(std::istream& file);
 
 	std::shared_ptr<Vertex> AddVertex(int id);
-	EdgePtr AddEdge(
+	std::shared_ptr<Edge> AddEdge(
 		const std::shared_ptr<Vertex>& startVertex, const std::shared_ptr<Vertex>& endVertex);
 	std::shared_ptr<Face> AddFace(const std::vector<std::shared_ptr<Vertex>>& vertices);
 
 	void RemoveVertex(const std::shared_ptr<Vertex>& vertexToRemove);
-	void RemoveEdge(const EdgePtr& edgeToRemove);
+	void RemoveEdge(const std::shared_ptr<Edge>& edgeToRemove);
 
 	static Graph BuildDual(const Graph& originalGraph);
 	std::vector<std::shared_ptr<Vertex>> GetSecondNeighborhood(
@@ -45,15 +41,13 @@ public:
 	void ProcessErshovColoring();
 	void ProcessErshovFaceColoring();
 
-	EdgePtr FindEdge(const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vertex>& v2);
+	std::shared_ptr<Edge> FindEdge(
+		const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vertex>& v2);
 
 private:
 	std::vector<std::shared_ptr<Vertex>> m_vertices;
-	std::vector<EdgePtr> m_edges;
+	std::vector<std::shared_ptr<Edge>> m_edges;
 	std::vector<std::shared_ptr<Face>> m_faces;
-	int m_vertexCounter = 0;
-	AdjacencyMatrix m_adjacencyMatrix;
-	double m_record = INF;
 };
 
 #endif // GRAPH_H

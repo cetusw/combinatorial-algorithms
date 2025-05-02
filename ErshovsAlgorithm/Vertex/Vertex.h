@@ -1,20 +1,20 @@
 #ifndef VERTEX_H
 #define VERTEX_H
-#include <vector>
 
 #include "../Edge/Edge.h"
+#include <vector>
 
 class Vertex
 {
 public:
 	explicit Vertex(int newId);
 
-	void AddIncidentalEdge(const EdgePtr& newEdge);
-	void RemoveIncidentalEdge(const EdgePtr& edgeToRemove);
+	void AddIncidentalEdge(const std::shared_ptr<Edge>& newEdge);
+	void RemoveIncidentalEdge(const std::shared_ptr<Edge>& edgeToRemove);
 
 	[[nodiscard]] int GetId() const;
 	[[nodiscard]] int GetColor() const;
-	[[nodiscard]] std::vector<EdgePtr> GetIncidentalEdges() const;
+	[[nodiscard]] std::vector<std::shared_ptr<Edge>> GetIncidentalEdges() const;
 	[[nodiscard]] bool GetIsMerged() const;
 
 	void SetColor(int newColor);
@@ -24,7 +24,7 @@ public:
 private:
 	int m_id;
 	int m_color;
-	std::vector<EdgePtr> m_incidentEdges;
+	std::vector<std::shared_ptr<Edge>> m_incidentEdges;
 	bool m_isMerged;
 };
 

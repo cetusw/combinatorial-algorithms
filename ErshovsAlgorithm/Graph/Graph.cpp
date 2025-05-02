@@ -2,8 +2,6 @@
 #include "../Face/Face.h"
 
 #include <algorithm>
-#include <iostream>
-#include <queue>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
@@ -41,7 +39,7 @@ void Graph::ReadGraphFromFile(std::istream& file)
 			}
 		}
 
-		std::vector<EdgePtr> faceEdges;
+		std::vector<std::shared_ptr<Edge>> faceEdges;
 		const size_t n = faceVertices.size();
 
 		auto newFace = std::make_shared<Face>(faceVertices, ++faceId);
@@ -52,11 +50,11 @@ void Graph::ReadGraphFromFile(std::istream& file)
 			auto& v1 = faceVertices[i];
 			auto& v2 = faceVertices[(i + 1) % n];
 
-			EdgePtr existingEdge = FindEdge(v1, v2);
+			std::shared_ptr<Edge> existingEdge = FindEdge(v1, v2);
 
 			if (!existingEdge)
 			{
-				EdgePtr newEdge = AddEdge(v1, v2);
+				std::shared_ptr<Edge> newEdge = AddEdge(v1, v2);
 				newEdge->SetLeftFace(m_faces.back());
 				faceEdges.push_back(newEdge);
 			}
@@ -69,7 +67,7 @@ void Graph::ReadGraphFromFile(std::istream& file)
 	}
 }
 
-EdgePtr Graph::FindEdge(const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vertex>& v2)
+std::shared_ptr<Edge> Graph::FindEdge(const std::shared_ptr<Vertex>& v1, const std::shared_ptr<Vertex>& v2)
 {
 	for (const auto& edge : m_edges)
 	{
@@ -89,14 +87,14 @@ std::shared_ptr<Vertex> Graph::AddVertex(int id)
 	return v;
 }
 
-EdgePtr Graph::AddEdge(
+std::shared_ptr<Edge> Graph::AddEdge(
 	const std::shared_ptr<Vertex>& startVertex, const std::shared_ptr<Vertex>& endVertex)
 {
 	if (startVertex == endVertex) return nullptr;
 	if (FindEdge(startVertex, endVertex)) return nullptr;
 	auto e = std::make_unique<Edge>(startVertex, endVertex);
 	m_edges.push_back(std::move(e));
-	EdgePtr edgePtr = m_edges.back();
+	std::shared_ptr<Edge> edgePtr = m_edges.back();
 
 	startVertex->AddIncidentalEdge(edgePtr);
 	endVertex->AddIncidentalEdge(edgePtr);
@@ -126,7 +124,7 @@ void Graph::RemoveVertex(const std::shared_ptr<Vertex>& vertexToRemove)
 	m_vertices.erase(it, m_vertices.end());
 }
 
-void Graph::RemoveEdge(const EdgePtr& edgeToRemove)
+void Graph::RemoveEdge(const std::shared_ptr<Edge>& edgeToRemove)
 {
 	const auto it = std::ranges::remove_if(m_edges, [edgeToRemove](const std::shared_ptr<Edge>& e) {
 		return e == edgeToRemove;
@@ -173,7 +171,7 @@ std::vector<std::shared_ptr<Vertex>> Graph::GetSecondNeighborhood(
 		return {};
 	}
 
-	for (const EdgePtr& edge : source->GetIncidentalEdges())
+	for (const std::shared_ptr<Edge>& edge : source->GetIncidentalEdges())
 	{
 		const std::shared_ptr<Vertex> neighbor
 			= (edge->GetStart() == source) ? edge->GetEnd() : edge->GetStart();
@@ -187,7 +185,7 @@ std::vector<std::shared_ptr<Vertex>> Graph::GetSecondNeighborhood(
 			continue;
 		}
 
-		for (const EdgePtr& edge : directNeighbor->GetIncidentalEdges())
+		for (const std::shared_ptr<Edge>& edge : directNeighbor->GetIncidentalEdges())
 		{
 			std::shared_ptr<Vertex> candidate
 				= (edge->GetStart() == directNeighbor) ? edge->GetEnd() : edge->GetStart();
