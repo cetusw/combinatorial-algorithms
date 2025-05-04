@@ -40,15 +40,15 @@ void Graph::ReadGraphFromFile(std::istream& file)
 		}
 
 		std::vector<std::shared_ptr<Edge>> faceEdges;
-		const size_t n = faceVertices.size();
+		const size_t numberOfVertices = faceVertices.size();
 
 		auto newFace = std::make_shared<Face>(faceVertices, ++faceId);
 		m_faces.push_back(newFace);
 
-		for (size_t i = 0; i < n; ++i)
+		for (size_t i = 0; i < numberOfVertices; ++i)
 		{
 			auto& v1 = faceVertices[i];
-			auto& v2 = faceVertices[(i + 1) % n];
+			auto& v2 = faceVertices[(i + 1) % numberOfVertices];
 
 			std::shared_ptr<Edge> existingEdge = FindEdge(v1, v2);
 
