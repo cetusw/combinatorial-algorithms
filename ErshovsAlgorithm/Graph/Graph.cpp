@@ -187,15 +187,15 @@ std::vector<std::shared_ptr<Vertex>> Graph::GetSecondNeighborhood(
 
 		for (const std::shared_ptr<Edge>& edge : directNeighbor->GetIncidentalEdges())
 		{
-			std::shared_ptr<Vertex> candidate
+			std::shared_ptr<Vertex> secondNeighbor
 				= (edge->GetStart() == directNeighbor) ? edge->GetEnd() : edge->GetStart();
 
-			if (candidate != source
-				&& !directNeighbors.contains(candidate)
-				&& std::ranges::find(m_vertices, candidate) != m_vertices.end()
-				&& !candidate->GetIsMerged())
+			if (secondNeighbor != source
+				&& !directNeighbors.contains(secondNeighbor)
+				&& std::ranges::find(m_vertices, secondNeighbor) != m_vertices.end()
+				&& !secondNeighbor->GetIsMerged())
 			{
-				secondNeighbors.insert(candidate);
+				secondNeighbors.insert(secondNeighbor);
 			}
 		}
 	}
@@ -216,7 +216,7 @@ void Graph::MergeVertices(
 		auto neighbor = edge->GetStart() == target ? edge->GetEnd() : edge->GetStart();
 		if (!FindEdge(target, neighbor))
 		{
-			AddEdge(target, neighbor);
+			AddEdge(toMerge, neighbor);
 		}
 		RemoveEdge(edge);
 	}
@@ -257,13 +257,13 @@ void Graph::ProcessErshovColoring()
 		auto secondNeighbors = GetSecondNeighborhood(startVertex);
 		while (!secondNeighbors.empty())
 		{
-			for (const auto& candidate : secondNeighbors)
+			for (const auto& secondNeighbor : secondNeighbors)
 			{
-				if (!processed.contains(candidate))
+				if (!processed.contains(secondNeighbor))
 				{
-					candidate->SetColor(currentColor);
-					MergeVertices(startVertex, candidate);
-					processed.insert(candidate);
+					secondNeighbor->SetColor(currentColor);
+					MergeVertices(startVertex, secondNeighbor);
+					processed.insert(secondNeighbor);
 					secondNeighbors = GetSecondNeighborhood(startVertex);
 					break;
 				}
@@ -285,17 +285,9 @@ void Graph::ProcessErshovFaceColoring()
 		{
 			if (dualVertex->GetId() == face->GetId())
 			{
-				faceToDualVertex[face] = dualVertex;
+				face->SetColor(dualVertex->GetColor());
 				break;
 			}
-		}
-	}
-
-	for (auto& face : m_faces)
-	{
-		if (faceToDualVertex.contains(face))
-		{
-			face->SetColor(faceToDualVertex[face]->GetColor());
 		}
 	}
 }
