@@ -28,7 +28,6 @@ private:
 	std::shared_ptr<Vertex> m_end;
 	std::shared_ptr<Face> m_leftFace;
 	std::shared_ptr<Face> m_rightFace;
-	bool m_isMerged;
 };
 
 #endif // EDGE_H

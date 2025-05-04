@@ -37,12 +37,12 @@ TEST(ErshovAlgorithm, ManyTriangleGraph)
 
 TEST(ErshovAlgorithm, PlanarGraph)
 {
-	ErshovAlgorithmTest(DIR + "planarGraph.txt", { 1, 2, 3, 4, 5, 4, 3, 1, 2, 5 });
+	ErshovAlgorithmTest(DIR + "planarGraph.txt", { 1, 2, 1, 3, 4, 3, 2, 1, 2, 4 });
 }
 
 TEST(ErshovAlgorithm, K5Graph)
 {
-	ErshovAlgorithmTest(DIR + "k5Graph.txt", { 1, 2, 1, 3, 2, 3, 4 });
+	ErshovAlgorithmTest(DIR + "k5Graph.txt", { 1, 2, 1, 2, 3, 4, 5 });
 }
 
 TEST(ErshovAlgorithm, WithBridgeGraph)

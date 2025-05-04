@@ -211,12 +211,12 @@ void Graph::MergeVertices(
 		return;
 	}
 
-	for (const auto& edge : target->GetIncidentalEdges())
+	for (const auto& edge : toMerge->GetIncidentalEdges())
 	{
-		auto neighbor = edge->GetStart() == target ? edge->GetEnd() : edge->GetStart();
+		auto neighbor = edge->GetStart() == toMerge ? edge->GetEnd() : edge->GetStart();
 		if (!FindEdge(target, neighbor))
 		{
-			AddEdge(toMerge, neighbor);
+			AddEdge(target, neighbor);
 		}
 		RemoveEdge(edge);
 	}
@@ -278,7 +278,6 @@ void Graph::ProcessErshovFaceColoring()
 
 	dual.ProcessErshovColoring();
 
-	std::unordered_map<std::shared_ptr<Face>, std::shared_ptr<Vertex>> faceToDualVertex;
 	for (const auto& face : m_faces)
 	{
 		for (const auto& dualVertex : dual.GetVertices())
