@@ -9,6 +9,11 @@ RelabelToFront::RelabelToFront() = default;
 
 int RelabelToFront::FindMaximumFlow(const Network& network)
 {
+	if (network.GetNumberOfVertices() == 0)
+	{
+		return 0;
+	}
+
 	m_network = network;
 	InitializePreflow();
 
@@ -38,31 +43,40 @@ int RelabelToFront::FindMaximumFlow(const Network& network)
 		}
 	}
 
+	m_flow = -m_excessFlow[0];
+
+	return m_flow;
+}
+
+void RelabelToFront::PrintFlowMatrix() const
+{
+	const int numberOfVertices = m_network.GetNumberOfVertices();
+	const int numberOfEdges = m_network.GetNumberOfEdges();
 	std::vector flowMatrix(
-		m_network.GetNumberOfVertices(), std::vector(m_network.GetNumberOfVertices(), 0));
-	for (size_t e = 0; e < m_network.GetNumberOfEdges(); ++e)
+		numberOfVertices, std::vector(numberOfVertices, 0));
+
+	for (size_t e = 0; e < numberOfEdges; ++e)
 	{
-		size_t u = m_network.GetEdgeSource(e);
-		size_t v = m_network.GetEdgeDestination(e);
-		int f = m_network.GetEdgeFlow(e);
-		if (f > 0)
+		const size_t u = m_network.GetEdgeSource(e);
+		const size_t v = m_network.GetEdgeDestination(e);
+		const int flow = m_network.GetEdgeFlow(e);
+		if (flow > 0)
 		{
-			flowMatrix[u][v] = f;
+			flowMatrix[u][v] = flow;
 		}
 	}
 
-	std::cout << "Максимальный поток = " << m_excessFlow[0] << "\n\n";
-	std::cout << "Матрица потока:\n";
+	std::cout << "Максимальный поток = " << m_flow << std::endl;
+	std::cout << std::endl;
+	std::cout << "Матрица потока:" << std::endl;
 	for (int u = 0; u < m_network.GetNumberOfVertices(); ++u)
 	{
 		for (int v = 0; v < m_network.GetNumberOfVertices(); ++v)
 		{
-			std::cout << std::setw(5) << flowMatrix[u][v];
+			std::cout << std::setw(3) << flowMatrix[u][v];
 		}
-		std::cout << "\n";
+		std::cout << std::endl;
 	}
-
-	return m_excessFlow[0];
 }
 
 void RelabelToFront::InitializePreflow()
@@ -96,13 +110,8 @@ void RelabelToFront::InitializePreflow()
 }
 void RelabelToFront::Discharge(const size_t vertex)
 {
-	std::cout << "Discharging vertex: " << vertex
-			  << ", excess: " << m_excessFlow[vertex]
-			  << ", height: " << m_height[vertex] << std::endl;
-
 	while (m_excessFlow[vertex] > 0)
 	{
-		std::cout << m_excessFlow[vertex] << std::endl;
 		if (m_current[vertex] >= m_network.GetEdgesFrom(vertex).size())
 		{
 			Relabel(vertex);

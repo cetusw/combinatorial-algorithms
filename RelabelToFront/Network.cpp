@@ -16,6 +16,7 @@ void Network::ReadNetworkFromFile(const std::string& filename)
 	{
 		totalVertices++;
 	}
+
 	inputFile.clear();
 	inputFile.seekg(0);
 

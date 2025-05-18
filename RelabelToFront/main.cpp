@@ -3,17 +3,19 @@
 
 #include <iostream>
 #include <ostream>
+
+constexpr std::string DIR = "../Test/data/";
+
 int main()
 {
 	try
 	{
 		Network network;
-		network.ReadNetworkFromFile("../networkExample.txt");
-		// std::cout << network.GetNumberOfVertices() << std::endl;
+		network.ReadNetworkFromFile(DIR + "cycleGraph.txt");
 
 		RelabelToFront relabelToFront;
-		const int maxFlow = relabelToFront.FindMaximumFlow(network);
-		std::cout << "Максимальный поток: " << maxFlow << std::endl;
+		relabelToFront.FindMaximumFlow(network);
+		relabelToFront.PrintFlowMatrix();
 	} catch (const std::exception& e)
 	{
 		std::cout << e.what() << std::endl;

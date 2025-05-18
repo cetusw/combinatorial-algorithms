@@ -6,6 +6,7 @@ class RelabelToFront {
 public:
 	RelabelToFront();
 	int FindMaximumFlow(const Network& network);
+	void PrintFlowMatrix() const;
 
 private:
 	void InitializePreflow();
@@ -17,6 +18,7 @@ private:
 	std::vector<int> m_excessFlow;
 	std::vector<size_t> m_current;
 	Network m_network;
+	int m_flow;
 };
 
 
