@@ -18,7 +18,7 @@ private:
 	std::vector<int> m_excessFlow;
 	std::vector<size_t> m_current;
 	Network m_network;
-	int m_flow;
+	int m_flow{};
 };
 
 

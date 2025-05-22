@@ -11,7 +11,7 @@ int main()
 	try
 	{
 		Network network;
-		network.ReadNetworkFromFile(DIR + "cycleGraph.txt");
+		network.ReadNetworkFromFile(DIR + "k5Graph.txt");
 
 		RelabelToFront relabelToFront;
 		relabelToFront.FindMaximumFlow(network);

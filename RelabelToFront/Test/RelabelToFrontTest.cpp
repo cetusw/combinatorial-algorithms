@@ -12,7 +12,7 @@ void RelabelToFrontTest(const std::string& fileName, const int expectedMaxFlow)
 	network.ReadNetworkFromFile(fileName);
 
 	RelabelToFront relabelToFront;
-	const int maxFlow = relabelToFront.FindMaximumFlow(network);\
+	const int maxFlow = relabelToFront.FindMaximumFlow(network);
 
 	EXPECT_EQ(expectedMaxFlow, maxFlow);
 }

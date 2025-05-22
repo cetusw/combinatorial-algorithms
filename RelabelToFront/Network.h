@@ -35,14 +35,12 @@ public:
 	[[nodiscard]] int GetEdgeFlow(size_t edge) const;
 	[[nodiscard]] size_t GetNumberOfEdges() const;
 	[[nodiscard]] std::vector<size_t> GetEdgesFrom(size_t vertex) const;
-	[[nodiscard]] std::vector<size_t> GetEdgesTo(size_t vertex) const;
 
 	void SetEdgeFlow(size_t edge, int flow);
 
 private:
 	std::vector<Edge> m_edges;
 	std::vector<std::vector<size_t>> m_graph;
-	std::vector<std::vector<size_t>> m_reversedGraph;
 };
 
 #endif // NETWORK_H

@@ -47,16 +47,13 @@ void Network::AddEdge(size_t source, size_t destination, int capacity)
 {
 	m_edges.emplace_back(source, destination, capacity);
 	m_graph[source].push_back(m_edges.size() - 1);
-	m_reversedGraph[destination].push_back(m_edges.size() - 1);
 	m_edges.emplace_back(destination, source, 0);
 	m_graph[destination].push_back(m_edges.size() - 1);
-	m_reversedGraph[source].push_back(m_edges.size() - 1);
 }
 
 void Network::AddVertex()
 {
 	m_graph.resize(m_graph.size() + 1);
-	m_reversedGraph.resize(m_reversedGraph.size() + 1);
 }
 
 size_t Network::GetNumberOfVertices() const { return m_graph.size(); }
@@ -81,15 +78,6 @@ std::vector<size_t> Network::GetEdgesFrom(const size_t vertex) const
 		throw std::out_of_range("Vertex out of range graph");
 	}
 	return m_graph[vertex];
-}
-
-std::vector<size_t> Network::GetEdgesTo(const size_t vertex) const
-{
-	if (vertex >= m_reversedGraph.size())
-	{
-		throw std::out_of_range("Vertex out of range reversed graph");
-	}
-	return m_reversedGraph[vertex];
 }
 
 void Network::SetEdgeFlow(const size_t edge, const int flow) { m_edges[edge].flow = flow; }

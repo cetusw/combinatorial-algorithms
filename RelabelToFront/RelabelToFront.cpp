@@ -50,8 +50,8 @@ int RelabelToFront::FindMaximumFlow(const Network& network)
 
 void RelabelToFront::PrintFlowMatrix() const
 {
-	const int numberOfVertices = m_network.GetNumberOfVertices();
-	const int numberOfEdges = m_network.GetNumberOfEdges();
+	const size_t numberOfVertices = m_network.GetNumberOfVertices();
+	const size_t numberOfEdges = m_network.GetNumberOfEdges();
 	std::vector flowMatrix(
 		numberOfVertices, std::vector(numberOfVertices, 0));
 
@@ -73,7 +73,7 @@ void RelabelToFront::PrintFlowMatrix() const
 	{
 		for (int v = 0; v < m_network.GetNumberOfVertices(); ++v)
 		{
-			std::cout << std::setw(3) << flowMatrix[u][v];
+			std::cout << std::setw(5) << flowMatrix[u][v];
 		}
 		std::cout << std::endl;
 	}
