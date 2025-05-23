@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <random>
 
-constexpr double MAX_RANDOM_DOUBLE = 1009.0;
+constexpr double MAX_RANDOM_DOUBLE = 1000.0;
 
 Pairs RabinVazirani::FindMaximumMatching(const Graph& graph)
 {
