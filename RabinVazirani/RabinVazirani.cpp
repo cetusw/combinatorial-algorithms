@@ -10,20 +10,20 @@ Pairs RabinVazirani::FindMaximumMatching(const Graph& graph)
 	m_graph = graph;
 	AdjacencyMatrix tutteMatrix = GetTutteMatrix(m_graph.GetAdjacencyMatrix());
 
-	const size_t rows = tutteMatrix.size();
-	std::vector used(rows, true);
+	const size_t vertices = tutteMatrix.size();
+	std::vector used(vertices, false);
 	Pairs matchingPairs;
-	FindMatching(rows, m_graph.AdjacencyMatrixToEdges(m_graph.GetAdjacencyMatrix()), tutteMatrix, used, matchingPairs);
+	FindMatching(vertices, m_graph.AdjacencyMatrixToEdges(m_graph.GetAdjacencyMatrix()), tutteMatrix, used, matchingPairs);
 	return matchingPairs;
 }
 
-void RabinVazirani::FindMatching(const size_t rows, const Pairs& edges,
+void RabinVazirani::FindMatching(const size_t vertices, const Pairs& edges,
 	 AdjacencyMatrix& tutteMatrix, std::vector<bool>& used, Pairs& matches)
 {
 	int unusedVertices = 0;
-	for (const bool unusedVertex : used)
+	for (const bool usedVertex : used)
 	{
-		if (unusedVertex)
+		if (!usedVertex)
 		{
 			unusedVertices++;
 		}
@@ -34,7 +34,7 @@ void RabinVazirani::FindMatching(const size_t rows, const Pairs& edges,
 		return;
 	}
 
-	AdjacencyMatrix invertedMatrix(rows, std::vector<double>(rows));
+	AdjacencyMatrix invertedMatrix(vertices, std::vector<double>(vertices));
 	if (!m_graph.GetInvertedMatrix(tutteMatrix, invertedMatrix))
 	{
 		return;
@@ -42,7 +42,7 @@ void RabinVazirani::FindMatching(const size_t rows, const Pairs& edges,
 
 	for (auto [u, v] : edges)
 	{
-		if (!used[u] || !used[v])
+		if (used[u] || used[v])
 		{
 			continue;
 		}
@@ -50,13 +50,16 @@ void RabinVazirani::FindMatching(const size_t rows, const Pairs& edges,
 		if (invertedMatrix[v][u] != 0)
 		{
 			matches.emplace_back(u, v);
-			used[u] = used[v] = false;
-			for (size_t i = 0; i < rows; i++)
+			used[u] = true;
+			used[v] = true;
+			for (size_t i = 0; i < vertices; i++)
 			{
-				tutteMatrix[u][i] = tutteMatrix[v][i] = 0;
-				tutteMatrix[i][u] = tutteMatrix[i][v] = 0;
+				tutteMatrix[u][i] = 0;
+				tutteMatrix[v][i] = 0;
+				tutteMatrix[i][u] = 0;
+				tutteMatrix[i][v] = 0;
 			}
-			FindMatching(rows, edges, tutteMatrix, used, matches);
+			FindMatching(vertices, edges, tutteMatrix, used, matches);
 		}
 	}
 }
@@ -70,12 +73,12 @@ double RabinVazirani::GetRandomDouble()
 
 AdjacencyMatrix RabinVazirani::GetTutteMatrix(const AdjacencyMatrix& matrix)
 {
-	const size_t rows = matrix.size();
-	AdjacencyMatrix tutteMatrix(rows, std::vector<double>(rows));
+	const size_t vertices = matrix.size();
+	AdjacencyMatrix tutteMatrix(vertices, std::vector<double>(vertices));
 
-	for (size_t i = 0; i < rows; ++i)
+	for (size_t i = 0; i < vertices; ++i)
 	{
-		for (size_t j = 0; j < rows; ++j)
+		for (size_t j = 0; j < vertices; ++j)
 		{
 			if (matrix[i][j] == Graph::NO_EDGE && !tutteMatrix[i][j])
 			{

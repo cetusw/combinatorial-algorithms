@@ -17,3 +17,5 @@ void RabinVaziraniTest(const std::string& filename, const Pairs& expectedPairs)
 
 TEST(RabinVazirani, Ordinary) { RabinVaziraniTest("ordinaryGraph.txt", { { 0, 2 }, { 1, 3 } }); }
 TEST(RabinVazirani, K5) { RabinVaziraniTest("k5Graph.txt", {{0, 1}, {2, 5}, {4, 3}}); }
+TEST(RabinVazirani, Line) { RabinVaziraniTest("lineGraph.txt", {{0, 1}, {2, 3}}); }
+TEST(RabinVazirani, Cycle) { RabinVaziraniTest("cycleGraph.txt", {{0, 1}, {2, 3}}); }

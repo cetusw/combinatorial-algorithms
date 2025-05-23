@@ -8,7 +8,7 @@ class RabinVazirani
 {
 public:
 	Pairs FindMaximumMatching(const Graph& graph);
-	void FindMatching(size_t rows, const Pairs& edges, AdjacencyMatrix& tutteMatrix,
+	void FindMatching(size_t vertices, const Pairs& edges, AdjacencyMatrix& tutteMatrix,
 		std::vector<bool>& used, Pairs& matches);
 
 private:
