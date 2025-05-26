@@ -53,7 +53,7 @@ TEST(GraphTest, GetInvertedMatrix) {
 	AdjacencyMatrix inverted;
     ASSERT_TRUE(graph.GetInvertedMatrix(original, inverted));
 
-	AdjacencyMatrix product(2, std::vector<double>(2, 0.0));
+	AdjacencyMatrix product(2, std::vector(2, 0.0));
     for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j) {
             for (int k = 0; k < 2; ++k) {

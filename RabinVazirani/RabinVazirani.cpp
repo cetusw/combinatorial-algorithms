@@ -28,7 +28,6 @@ void RabinVazirani::FindMatching(const size_t vertices, const Pairs& edges,
 			unusedVertices++;
 		}
 	}
-
 	if (unusedVertices < 2)
 	{
 		return;

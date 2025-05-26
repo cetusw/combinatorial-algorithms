@@ -50,34 +50,97 @@ void Graph::PrintAdjacencyMatrix(const AdjacencyMatrix& adj)
 bool Graph::GetInvertedMatrix(const AdjacencyMatrix& matrix, AdjacencyMatrix& invertedMatrix)
 {
 	const size_t rows = matrix.size();
-	const double determinant = GetDeterminant(matrix);
-	if (determinant == 0.0)
-	{
-		return false;
-	}
 
-	AdjacencyMatrix cofactor(rows, std::vector<double>(rows));
-	for (int i = 0; i < rows; ++i)
+	AdjacencyMatrix extendedMatrix(rows, std::vector(rows * 2, 0.0));
+	GetExtendedMatrix(matrix, extendedMatrix);
+
+	for (size_t i = 0; i < rows; ++i)
 	{
-		for (int j = 0; j < rows; ++j)
+		size_t rowWithMaxElement = i;
+		GetRowWithMaxElement(i, extendedMatrix, rowWithMaxElement);
+
+		if (std::fabs(extendedMatrix[rowWithMaxElement][i]) < 1e-10)
 		{
-			auto minor = GetMinor(matrix, i, j);
-			const double minorDeterminant = GetDeterminant(minor);
-			cofactor[i][j] = ((i + j) % 2 == 0 ? 1 : -1) * minorDeterminant;
+			return false;
 		}
+
+		SwapRows(rowWithMaxElement, i, extendedMatrix);
+		NormalizeRow(extendedMatrix, i);
+		ResetRowsToZero(extendedMatrix, i);
 	}
 
-	auto newMatrix = GetTranspose(cofactor);
-	for (int i = 0; i < rows; ++i)
-	{
-		for (int j = 0; j < rows; ++j)
-		{
-			newMatrix[i][j] /= determinant;
-		}
-	}
+	ExtractInvertedMatrix(invertedMatrix, extendedMatrix);
 
-	invertedMatrix = std::move(newMatrix);
 	return true;
+}
+
+void Graph::GetExtendedMatrix(const AdjacencyMatrix& matrix, AdjacencyMatrix& extendedMatrix)
+{
+	const size_t rows = matrix.size();
+	for (size_t i = 0; i < rows; ++i)
+	{
+		std::copy(matrix[i].begin(), matrix[i].end(), extendedMatrix[i].begin());
+		extendedMatrix[i][rows + i] = 1.0;
+	}
+}
+
+void Graph::GetRowWithMaxElement(
+	const size_t& currentRow, const AdjacencyMatrix& extendedMatrix, size_t& rowWithMaxElement)
+{
+	for (size_t j = currentRow; j < extendedMatrix.size(); ++j)
+	{
+		if (std::fabs(extendedMatrix[j][currentRow])
+			> std::fabs(extendedMatrix[rowWithMaxElement][currentRow]))
+		{
+			rowWithMaxElement = j;
+		}
+	}
+}
+
+void Graph::SwapRows(
+	const size_t& rowWithMaxElement, const size_t& currentRow, AdjacencyMatrix& extendedMatrix)
+{
+	if (rowWithMaxElement != currentRow)
+	{
+		std::swap(extendedMatrix[currentRow], extendedMatrix[rowWithMaxElement]);
+	}
+}
+
+void Graph::NormalizeRow(AdjacencyMatrix& extendedMatrix, const size_t& currentRow)
+{
+	const double div = extendedMatrix[currentRow][currentRow];
+	for (size_t j = 0; j < extendedMatrix.size() * 2; ++j)
+	{
+		extendedMatrix[currentRow][j] /= div;
+	}
+}
+
+void Graph::ResetRowsToZero(AdjacencyMatrix& extendedMatrix, const size_t& currentRow)
+{
+	for (size_t j = 0; j < extendedMatrix.size(); ++j)
+	{
+		if (j != currentRow)
+		{
+			const double factor = extendedMatrix[j][currentRow];
+			for (size_t k = 0; k < extendedMatrix.size() * 2; ++k)
+			{
+				extendedMatrix[j][k] -= factor * extendedMatrix[currentRow][k];
+			}
+		}
+	}
+}
+
+void Graph::ExtractInvertedMatrix(AdjacencyMatrix& invertedMatrix, const AdjacencyMatrix& extendedMatrix)
+{
+	invertedMatrix.resize(extendedMatrix.size());
+	for (size_t i = 0; i < extendedMatrix.size(); ++i)
+	{
+		invertedMatrix[i].resize(extendedMatrix[i].size());
+		for (size_t j = 0; j < extendedMatrix.size(); ++j)
+		{
+			invertedMatrix[i][j] = extendedMatrix[i][j + extendedMatrix.size()];
+		}
+	}
 }
 
 double Graph::GetDeterminant(const AdjacencyMatrix& matrix)
