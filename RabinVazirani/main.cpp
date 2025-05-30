@@ -6,7 +6,7 @@ constexpr std::string DIR = "../Test/data/";
 int main()
 {
 	Graph graph;
-	graph.ReadGraphFromFile(DIR + "ordinaryGraph.txt");
+	graph.ReadGraphFromFile(DIR + "superLargeGraph.txt");
 
 	RabinVazirani rabinVazirani;
 	Pairs maxMatching = rabinVazirani.FindMaximumMatching(graph);
